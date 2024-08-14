@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e8256c2813eb4c4aace50ec82703354, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
-  Health: 14
-  Armor: 2
+  Health: 6
+  Armor: 1
   StrengthOfAttack: 2
-  DalayOfAttack: 3
+  PreAttackDelay: 2

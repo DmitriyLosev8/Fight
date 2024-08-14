@@ -1,40 +1,53 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.EnemyComponents
 {
     internal class EnemyPool 
     {
-        private List<Enemy> _enemies;
-        
+        private Enemy _melee;
+        private Enemy _range;
+
         public EnemyPool(Enemy melee, Enemy range)
         {
-            AddEnemy(melee);
-            AddEnemy(range);    
+            CreateMelee(melee);
+            CreateRange(range);   
         }
 
-
-        public Enemy GetEnemy(int idOfEnemy)
+        public Enemy GetEnemy(int ñhanceOfSpawn)
         {
-            foreach (Enemy enemy in _enemies)
+            if (ñhanceOfSpawn >= _melee.MinBorderOfChanceOfCreate && ñhanceOfSpawn < _melee.MaxBorderOfChanceOfCreate)
             {
-                if (enemy.gameObject.activeSelf == false && enemy.IdOfType == idOfEnemy)
+                if (_melee.gameObject.activeSelf == false)
                 {
-                    enemy.gameObject.SetActive(true);
+                    _melee.gameObject.SetActive(true);
+                    
+                    return _melee;
+                }    
+            }
 
-                    return enemy;
-                }
+            if (ñhanceOfSpawn >= _range.MinBorderOfChanceOfCreate && ñhanceOfSpawn! < _range.MaxBorderOfChanceOfCreate)
+            {
+                if (_range.gameObject.activeSelf == false)
+                {
+                    _range.gameObject.SetActive(true);
+
+                    return _range;
+                }  
             }
 
             return null;
         }
-       
-        private void AddEnemy(Enemy enemy)
+
+        private void CreateMelee(Enemy melee) 
         {
-            Enemy currentEnemy = GameObject.Instantiate(enemy);
-            currentEnemy.gameObject.SetActive(false);
-            _enemies.Add(currentEnemy);
-        }  
+            _melee = GameObject.Instantiate(melee);
+            _melee.gameObject.SetActive(false);
+        }
+
+        private void CreateRange(Enemy range)
+        {
+            _range = GameObject.Instantiate(range);
+            _range.gameObject.SetActive(false);
+        }
     }
 }

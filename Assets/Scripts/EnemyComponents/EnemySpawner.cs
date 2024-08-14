@@ -1,6 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
+using Assets.Scripts.Interfaces;
 
 namespace Assets.Scripts.EnemyComponents
 {
@@ -12,32 +12,56 @@ namespace Assets.Scripts.EnemyComponents
 
         private int _minBorderOfrandom = 0;
         private int _maxBorderOfrandom = 100;
-        private int currentChanceOfSpawn;
-
+        private int _currentChanceOfSpawn;
+        private Enemy _currentEnemy; 
+        private GlobalUI _gui;
         private EnemyPool _pool;
+
+        public event Action<Enemy> EnemyCreated;
+        public event Action EnemyDied;
 
         private void Start()
         {
             _pool = new EnemyPool(_meleePrafab, _rangePrafab);  
         }
 
-        public Enemy CurrentEnemy;
-
-        public void Spawn()
+        private void OnDisable()
         {
-            currentChanceOfSpawn = Random.Range(_minBorderOfrandom, _maxBorderOfrandom);
+            if (_currentEnemy != null)
+                _currentEnemy.Died -= OnDied;
+        }
 
-            if(currentChanceOfSpawn >= _meleePrafab.MinBorderOfChanceOfCreate && currentChanceOfSpawn !> _meleePrafab.MaxBorderOfChanceOfCreate)
-            {
-                CurrentEnemy = _pool.GetEnemy(EnemiesHash.MeleeEnemyId);
-                CurrentEnemy.transform.position = _spotOfSpawn.position;
-            }
+        public void TakeGUI(GlobalUI gui)
+        {
+            _gui = gui;
+        }
 
-            if (currentChanceOfSpawn >= _rangePrafab.MinBorderOfChanceOfCreate && currentChanceOfSpawn! > _rangePrafab.MaxBorderOfChanceOfCreate)
+        public void StopFight()
+        {
+            if(_currentEnemy!= null && _currentEnemy.gameObject.activeSelf)
             {
-                CurrentEnemy =  _pool.GetEnemy(EnemiesHash.RangeEnemyId);
-                CurrentEnemy.transform.position = _spotOfSpawn.position;
-            }
+                _currentEnemy.ExitFight();
+                _gui.StopShowEnemyHealth();
+            }        
+        }
+
+        public void Spawn(IDamageable player)
+        {      
+            _currentChanceOfSpawn = UnityEngine.Random.Range(_minBorderOfrandom, _maxBorderOfrandom);  
+            _currentEnemy = _pool.GetEnemy(_currentChanceOfSpawn);
+            _currentEnemy.transform.position = _spotOfSpawn.position;
+            _gui.SetMaxEnemyHealthSlider(_currentEnemy.Health);
+            _currentEnemy.HealthChanged += _gui.ShowEnemyHealth;
+            _currentEnemy.InitFsm(_gui.EnemyPrepareSlider, _gui.EnemyAttackSlider);  
+            _currentEnemy.TakePlayer(player);
+            EnemyCreated?.Invoke(_currentEnemy);
+            _currentEnemy.Died += OnDied;
+        }
+
+        private void OnDied()
+        {
+            EnemyDied?.Invoke();
+            _gui.StopShowEnemyHealth();
         }
     }
 }
